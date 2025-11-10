@@ -10,9 +10,9 @@ spec:
   issuerRef:
     name: vault-issuer
     kind: Issuer
-  commonName: <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_url>
+  commonName: <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_external_url>
   dnsNames:
-    - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_url>
+    - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_external_url>
     - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_internal_url>
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days before expiration

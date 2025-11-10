@@ -15,12 +15,12 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_url>
+        - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_external_url>
         - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_internal_url>
       secretName: wazuh-dashboard-tls
   rules:
     # External access (diagon.cloud)
-    - host: <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_url>
+    - host: <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_external_url>
       http:
         paths:
           - path: /
