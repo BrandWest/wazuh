@@ -38,12 +38,6 @@ spec:
     - 127.0.0.1
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - server auth
-    - client auth
-
 ---
 # Indexer Node Certificate - Pod 1
 apiVersion: cert-manager.io/v1
@@ -67,12 +61,6 @@ spec:
     - 127.0.0.1
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - server auth
-    - client auth
-
 ---
 # Indexer Node Certificate - Pod 2
 apiVersion: cert-manager.io/v1
@@ -96,11 +84,6 @@ spec:
     - 127.0.0.1
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - server auth
-    - client auth
 
 ---
 # Indexer Admin Certificate (for API access and cluster management)
@@ -119,11 +102,6 @@ spec:
     - admin
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - client auth
-
 ---
 # Filebeat Certificate - Conductor
 apiVersion: cert-manager.io/v1
@@ -144,10 +122,6 @@ spec:
     - wazuh-manager-conductor-0
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - client auth
 
 ---
 # Filebeat Certificate - Worker 0
@@ -169,10 +143,6 @@ spec:
     - wazuh-manager-worker-0
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - client auth
 
 ---
 # Filebeat Certificate - Worker 1
@@ -194,10 +164,6 @@ spec:
     - wazuh-manager-worker-1
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - client auth
 
 ---
 # Dashboard Backend Certificate (for dashboard → indexer communication)
@@ -218,7 +184,3 @@ spec:
     - dashboard.wazuh.svc
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
-  usages:
-    - digital signature
-    - key encipherment
-    - client auth
