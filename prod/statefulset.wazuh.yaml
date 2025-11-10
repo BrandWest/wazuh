@@ -8,7 +8,7 @@ spec:
     whenDeleted: Retain
     whenScaled: Retain
   podManagementPolicy: OrderedReady
-  replicas: 3
+  replicas: 2
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -23,7 +23,7 @@ spec:
       containers:
       - env:
         - name: OPENSEARCH_JAVA_OPTS
-          value: -Xms1g -Xmx1g -Dlog4j2.formatMsgNoLookups=true
+          value: -Xms2g -Xmx2g -Dlog4j2.formatMsgNoLookups=true
         - name: CLUSTER_NAME
           value: wazuh
         - name: NETWORK_HOST
@@ -54,11 +54,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: '1'
-            memory: 3Gi
+            cpu: '2'
+            memory: 4Gi
           requests:
-            cpu: 500m
-            memory: 2Gi
+            cpu: 800m
+            memory: 2560Mi
         securityContext:
           capabilities:
             add:
@@ -180,9 +180,6 @@ spec:
         - mountPath: /certs/node-1
           name: wazuh-indexer-1-cert
           readOnly: true
-        - mountPath: /certs/node-2
-          name: wazuh-indexer-2-cert
-          readOnly: true
         - mountPath: /certs/admin
           name: wazuh-indexer-admin-cert
           readOnly: true
@@ -209,10 +206,6 @@ spec:
         secret:
           defaultMode: 384
           secretName: wazuh-indexer-1-cert
-      - name: wazuh-indexer-2-cert
-        secret:
-          defaultMode: 384
-          secretName: wazuh-indexer-2-cert
       - name: wazuh-indexer-admin-cert
         secret:
           defaultMode: 384
@@ -330,11 +323,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: '1'
-            memory: 2Gi
+            cpu: '1500m'
+            memory: 3Gi
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 600m
+            memory: 1536Mi
         securityContext:
           capabilities:
             add:
@@ -522,11 +515,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: '1'
-            memory: 2Gi
+            cpu: '1500m'
+            memory: 3Gi
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 600m
+            memory: 1536Mi
         securityContext:
           capabilities:
             add:

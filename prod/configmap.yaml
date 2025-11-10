@@ -18,11 +18,11 @@ data:
 
     server.ssl.enabled: true
 
-    server.ssl.key: "/usr/share/wazuh-dashboard/certs/key.pem"
+    server.ssl.key: "/usr/share/wazuh-dashboard/certs/tls.key"
 
-    server.ssl.certificate: "/usr/share/wazuh-dashboard/certs/cert.pem"
+    server.ssl.certificate: "/usr/share/wazuh-dashboard/certs/tls.crt"
 
-    opensearch.ssl.certificateAuthorities: ["/usr/share/wazuh-dashboard/certs/root-ca.pem"]
+    opensearch.ssl.certificateAuthorities: ["/usr/share/wazuh-dashboard/certs/ca.crt"]
 
     uiSettings.overrides.defaultRoute: /app/wz-home
 
@@ -63,7 +63,7 @@ data:
     \ ${NETWORK_HOST}\ndiscovery.seed_hosts: wazuh-indexer-0.wazuh-indexer\ncluster.initial_cluster_manager_nodes:\n\
     \  - wazuh-indexer-0\n\n# Allow Filebeat 7.10.2 to work with OpenSearch 2.x\n\
     compatibility.override_main_response_version: true\n\nnode.max_local_storage_nodes:\
-    \ \"3\"\npath.data: /var/lib/wazuh-indexer\npath.logs: /var/log/wazuh-indexer\n\
+    \ \"2\"\npath.data: /var/lib/wazuh-indexer\npath.logs: /var/log/wazuh-indexer\n\
     plugins.security.ssl.http.pemcert_filepath: /usr/share/wazuh-indexer/config/certs/node.pem\n\
     plugins.security.ssl.http.pemkey_filepath: /usr/share/wazuh-indexer/config/certs/node-key.pem\n\
     plugins.security.ssl.http.pemtrustedcas_filepath: /usr/share/wazuh-indexer/config/certs/root-ca.pem\n\

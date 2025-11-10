@@ -62,30 +62,6 @@ spec:
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
 ---
-# Indexer Node Certificate - Pod 2
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: wazuh-indexer-2-cert
-  namespace: wazuh
-spec:
-  secretName: wazuh-indexer-2-cert
-  commonName: wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local
-  issuerRef:
-    name: vault-issuer
-    kind: Issuer
-  dnsNames:
-    - wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local
-    - wazuh-indexer-2.wazuh-indexer.wazuh.svc
-    - wazuh-indexer-2.wazuh-indexer
-    - wazuh-indexer-2
-    - localhost
-  ipAddresses:
-    - 127.0.0.1
-  duration: 2160h # 90 days
-  renewBefore: 720h # 30 days
-
----
 # Indexer Admin Certificate (for API access and cluster management)
 apiVersion: cert-manager.io/v1
 kind: Certificate
