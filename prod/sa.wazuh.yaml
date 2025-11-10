@@ -1,0 +1,35 @@
+# ServiceAccount for cert-manager in this namespace
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager
+  namespace: wazuh
+---
+# ClusterRole for cert-manager permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-wazuh
+  annotations:
+    avp.kubernetes.io/path: "argocd/data/argocd-vault-plugin/wazuh"
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificates", "certificaterequests", "issuers"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+# Bind the ClusterRole to the ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-wazuh
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-wazuh
+subjects:
+- kind: ServiceAccount
+  name: cert-manager
+  namespace: wazuh
