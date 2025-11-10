@@ -1,0 +1,224 @@
+---
+# Root CA Certificate for Indexer Cluster
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-indexer-root-ca
+  namespace: wazuh
+spec:
+  secretName: wazuh-indexer-root-ca
+  commonName: "Wazuh Indexer Root CA"
+  isCA: true
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  duration: 8760h # 1 year
+  renewBefore: 720h # 30 days
+
+---
+# Indexer Node Certificate - Pod 0
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-indexer-0-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-indexer-0-cert
+  commonName: wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local
+    - wazuh-indexer-0.wazuh-indexer.wazuh.svc
+    - wazuh-indexer-0.wazuh-indexer
+    - wazuh-indexer-0
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
+
+---
+# Indexer Node Certificate - Pod 1
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-indexer-1-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-indexer-1-cert
+  commonName: wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local
+    - wazuh-indexer-1.wazuh-indexer.wazuh.svc
+    - wazuh-indexer-1.wazuh-indexer
+    - wazuh-indexer-1
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
+
+---
+# Indexer Node Certificate - Pod 2
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-indexer-2-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-indexer-2-cert
+  commonName: wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - wazuh-indexer-2.wazuh-indexer.wazuh.svc.cluster.local
+    - wazuh-indexer-2.wazuh-indexer.wazuh.svc
+    - wazuh-indexer-2.wazuh-indexer
+    - wazuh-indexer-2
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
+
+---
+# Indexer Admin Certificate (for API access and cluster management)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-indexer-admin-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-indexer-admin-cert
+  commonName: admin
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - admin
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth
+
+---
+# Filebeat Certificate - Conductor
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-manager-conductor-filebeat-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-manager-conductor-filebeat-cert
+  commonName: wazuh-manager-conductor-0.wazuh-cluster.wazuh.svc.cluster.local
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - wazuh-manager-conductor-0.wazuh-cluster.wazuh.svc.cluster.local
+    - wazuh-manager-conductor-0.wazuh-cluster.wazuh.svc
+    - wazuh-manager-conductor-0.wazuh-cluster
+    - wazuh-manager-conductor-0
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth
+
+---
+# Filebeat Certificate - Worker 0
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-manager-worker-0-filebeat-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-manager-worker-0-filebeat-cert
+  commonName: wazuh-manager-worker-0.wazuh-cluster.wazuh.svc.cluster.local
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - wazuh-manager-worker-0.wazuh-cluster.wazuh.svc.cluster.local
+    - wazuh-manager-worker-0.wazuh-cluster.wazuh.svc
+    - wazuh-manager-worker-0.wazuh-cluster
+    - wazuh-manager-worker-0
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth
+
+---
+# Filebeat Certificate - Worker 1
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-manager-worker-1-filebeat-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-manager-worker-1-filebeat-cert
+  commonName: wazuh-manager-worker-1.wazuh-cluster.wazuh.svc.cluster.local
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - wazuh-manager-worker-1.wazuh-cluster.wazuh.svc.cluster.local
+    - wazuh-manager-worker-1.wazuh-cluster.wazuh.svc
+    - wazuh-manager-worker-1.wazuh-cluster
+    - wazuh-manager-worker-1
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth
+
+---
+# Dashboard Backend Certificate (for dashboard → indexer communication)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wazuh-dashboard-backend-cert
+  namespace: wazuh
+spec:
+  secretName: wazuh-dashboard-backend-cert
+  commonName: wazuh-dashboard
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer
+  dnsNames:
+    - wazuh-dashboard
+    - dashboard.wazuh.svc.cluster.local
+    - dashboard.wazuh.svc
+  duration: 2160h # 90 days
+  renewBefore: 720h # 30 days
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth

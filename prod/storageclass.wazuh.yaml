@@ -1,0 +1,9 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: wazuh-storage
+parameters:
+  archiveOnDelete: "false"
+provisioner: cluster.local/nfs-subdir-external-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: Immediate

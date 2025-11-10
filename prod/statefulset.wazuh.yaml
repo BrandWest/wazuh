@@ -1,0 +1,670 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-indexer
+  namespace: wazuh
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: wazuh-indexer
+  serviceName: wazuh-indexer
+  template:
+    metadata:
+      labels:
+        app: wazuh-indexer
+      name: wazuh-indexer
+    spec:
+      containers:
+      - env:
+        - name: OPENSEARCH_JAVA_OPTS
+          value: -Xms3g -Xmx3g -Dlog4j2.formatMsgNoLookups=true
+        - name: CLUSTER_NAME
+          value: wazuh
+        - name: NETWORK_HOST
+          value: 0.0.0.0
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: DISCOVERY_SERVICE
+          value: wazuh-indexer
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: DISABLE_INSTALL_DEMO_CONFIG
+          value: 'true'
+        image: wazuh/wazuh-indexer:4.14.0
+        imagePullPolicy: IfNotPresent
+        name: wazuh-indexer
+        ports:
+        - containerPort: 9200
+          name: indexer-rest
+          protocol: TCP
+        - containerPort: 9300
+          name: indexer-nodes
+          protocol: TCP
+        resources:
+          limits:
+            cpu: '2'
+            memory: 6Gi
+          requests:
+            cpu: '1500m'
+            memory: 4Gi
+        securityContext:
+          capabilities:
+            add:
+            - SYS_CHROOT
+          runAsGroup: 3000
+          runAsUser: 1000
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/wazuh-indexer
+          name: wazuh-indexer
+        - mountPath: /usr/share/wazuh-indexer/config/certs/node-key.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: node-key.pem
+        - mountPath: /usr/share/wazuh-indexer/config/certs/node.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: node.pem
+        - mountPath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: root-ca.pem
+        - mountPath: /usr/share/wazuh-indexer/config/certs/admin.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: admin.pem
+        - mountPath: /usr/share/wazuh-indexer/config/certs/admin-key.pem
+          name: indexer-certs
+          readOnly: true
+          subPath: admin-key.pem
+        - mountPath: /usr/share/wazuh-indexer/config/opensearch.yml
+          name: indexer-conf
+          readOnly: true
+          subPath: opensearch.yml
+        - mountPath: /usr/share/wazuh-indexer/config/opensearch-security/internal_users.yml
+          name: indexer-conf
+          readOnly: true
+          subPath: internal_users.yml
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - chown -R 1000:3000 /var/lib/wazuh-indexer
+        image: busybox
+        imagePullPolicy: Always
+        name: volume-mount-hack
+        resources:
+          limits:
+            cpu: 200m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/wazuh-indexer
+          name: wazuh-indexer
+      - command:
+        - sysctl
+        - -w
+        - vm.max_map_count=262144
+        image: busybox
+        imagePullPolicy: Always
+        name: increase-the-vm-max-map-count
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - command:
+        - sh
+        - -c
+        - |
+          # Get pod ordinal from hostname (e.g., wazuh-indexer-0 -> 0)
+          ORDINAL=${HOSTNAME##*-}
+          echo "Setting up certificates for pod ordinal: $ORDINAL"
+
+          # Copy node certificate for this specific pod
+          cp /certs/node-$ORDINAL/tls.crt /certs-out/node.pem
+          cp /certs/node-$ORDINAL/tls.key /certs-out/node-key.pem
+
+          # Copy admin certificate (same for all pods)
+          cp /certs/admin/tls.crt /certs-out/admin.pem
+          cp /certs/admin/tls.key /certs-out/admin-key.pem
+
+          # Copy root CA (same for all pods)
+          cp /certs/ca/ca.crt /certs-out/root-ca.pem
+
+          # Set proper permissions
+          chmod 644 /certs-out/*
+
+          echo "Certificates copied successfully"
+          ls -la /certs-out/
+        image: busybox
+        imagePullPolicy: Always
+        name: setup-certs
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /certs/node-0
+          name: wazuh-indexer-0-cert
+          readOnly: true
+        - mountPath: /certs/node-1
+          name: wazuh-indexer-1-cert
+          readOnly: true
+        - mountPath: /certs/node-2
+          name: wazuh-indexer-2-cert
+          readOnly: true
+        - mountPath: /certs/admin
+          name: wazuh-indexer-admin-cert
+          readOnly: true
+        - mountPath: /certs/ca
+          name: wazuh-indexer-root-ca
+          readOnly: true
+        - mountPath: /certs-out
+          name: indexer-certs
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 3000
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: indexer-certs
+        emptyDir: {}
+      - name: wazuh-indexer-0-cert
+        secret:
+          defaultMode: 384
+          secretName: wazuh-indexer-0-cert
+      - name: wazuh-indexer-1-cert
+        secret:
+          defaultMode: 384
+          secretName: wazuh-indexer-1-cert
+      - name: wazuh-indexer-2-cert
+        secret:
+          defaultMode: 384
+          secretName: wazuh-indexer-2-cert
+      - name: wazuh-indexer-admin-cert
+        secret:
+          defaultMode: 384
+          secretName: wazuh-indexer-admin-cert
+      - name: wazuh-indexer-root-ca
+        secret:
+          defaultMode: 384
+          secretName: wazuh-indexer-root-ca
+      - configMap:
+          defaultMode: 384
+          name: indexer-conf
+        name: indexer-conf
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: wazuh-indexer
+      namespace: indexer-cluster
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 50Gi
+      storageClassName: wazuh-storage
+      volumeMode: Filesystem
+    status:
+      phase: Pending
+  availableReplicas: 3
+  collisionCount: 0
+  currentReplicas: 3
+  currentRevision: wazuh-indexer-55c97659bf
+  observedGeneration: 3
+  readyReplicas: 3
+  updateRevision: wazuh-indexer-55c97659bf
+  updatedReplicas: 3
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-manager-conductor
+  namespace: wazuh
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: Parallel
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: wazuh-manager
+      node-type: conductor
+  serviceName: wazuh-cluster
+  template:
+    metadata:
+      labels:
+        app: wazuh-manager
+        node-type: conductor
+      name: wazuh-manager-conductor
+    spec:
+      containers:
+      - env:
+        - name: INDEXER_URL
+          value: https://indexer:9200
+        - name: INDEXER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: indexer-cred
+        - name: INDEXER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: indexer-cred
+        - name: FILEBEAT_SSL_VERIFICATION_MODE
+          value: full
+        - name: SSL_CERTIFICATE_AUTHORITIES
+          value: /etc/ssl/root-ca.pem
+        - name: SSL_CERTIFICATE
+          value: /etc/ssl/filebeat.pem
+        - name: SSL_KEY
+          value: /etc/ssl/filebeat.key
+        - name: API_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: wazuh-api-cred
+        - name: API_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: wazuh-api-cred
+        - name: WAZUH_CLUSTER_KEY
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: wazuh-cluster-key
+        image: wazuh/wazuh-manager:4.14.0
+        imagePullPolicy: IfNotPresent
+        name: wazuh-manager
+        ports:
+        - containerPort: 1515
+          name: registration
+          protocol: TCP
+        - containerPort: 1516
+          name: cluster
+          protocol: TCP
+        - containerPort: 55000
+          name: api
+          protocol: TCP
+        resources:
+          limits:
+            cpu: '1500m'
+            memory: 4Gi
+          requests:
+            cpu: '1'
+            memory: 3Gi
+        securityContext:
+          capabilities:
+            add:
+            - SYS_CHROOT
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /wazuh-config-mount/etc/ossec.conf
+          name: config
+          readOnly: true
+          subPath: conductor.conf
+        - mountPath: /etc/ssl/root-ca.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: ca.crt
+        - mountPath: /etc/ssl/filebeat.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: tls.crt
+        - mountPath: /etc/ssl/filebeat.key
+          name: filebeat-certs
+          readOnly: true
+          subPath: tls.key
+        - mountPath: /wazuh-config-mount/etc/authd.pass
+          name: wazuh-authd-pass
+          readOnly: true
+          subPath: authd.pass
+        - mountPath: /var/ossec/api/configuration
+          name: wazuh-manager-conductor
+          subPath: wazuh/var/ossec/api/configuration
+        - mountPath: /var/ossec/etc
+          name: wazuh-manager-conductor
+          subPath: wazuh/var/ossec/etc
+        - mountPath: /var/ossec/logs
+          name: wazuh-manager-conductor
+          subPath: wazuh/var/ossec/logs
+        - mountPath: /var/ossec/queue
+          name: wazuh-manager-conductor
+          subPath: wazuh/var/ossec/queue
+        - mountPath: /var/ossec/var/multigroups
+          name: wazuh-manager-conductor
+          subPath: wazuh/var/ossec/var/multigroups
+        - mountPath: /var/ossec/active-response/bin
+          name: wazuh-manager-conductor
+          subPath: wazuh/var/ossec/active-response/bin
+        - mountPath: /var/ossec/wodles
+          name: wazuh-manager-conductor
+          subPath: wazuh/var/ossec/wodles
+        - mountPath: /etc/filebeat
+          name: wazuh-manager-conductor
+          subPath: filebeat/etc/filebeat
+        - mountPath: /var/lib/filebeat
+          name: wazuh-manager-conductor
+          subPath: filebeat/var/lib/filebeat
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        kubernetes.io/arch: amd64
+        kubernetes.io/hostname: node4
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 3000
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: wazuh-conf
+        name: config
+      - name: filebeat-certs
+        secret:
+          defaultMode: 420
+          secretName: wazuh-manager-conductor-filebeat-cert
+      - name: wazuh-authd-pass
+        secret:
+          defaultMode: 420
+          secretName: wazuh-authd-pass
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: wazuh-manager-conductor
+      namespace: wazuh
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 30Gi
+      storageClassName: wazuh-storage
+      volumeMode: Filesystem
+    status:
+      phase: Pending
+  availableReplicas: 1
+  collisionCount: 0
+  currentReplicas: 1
+  currentRevision: wazuh-manager-conductor-6f8b79b6c
+  observedGeneration: 3
+  readyReplicas: 1
+  updateRevision: wazuh-manager-conductor-6f8b79b6c
+  updatedReplicas: 1
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wazuh-manager-worker
+  namespace: wazuh
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: Parallel
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: wazuh-manager
+      node-type: worker
+  serviceName: wazuh-cluster
+  template:
+    metadata:
+      labels:
+        app: wazuh-manager
+        node-type: worker
+      name: wazuh-manager-worker
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - node4
+                - node6
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: wazuh-manager
+                  node-type: worker
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      containers:
+      - env:
+        - name: INDEXER_URL
+          value: https://indexer:9200
+        - name: INDEXER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: indexer-cred
+        - name: INDEXER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: indexer-cred
+        - name: FILEBEAT_SSL_VERIFICATION_MODE
+          value: full
+        - name: SSL_CERTIFICATE_AUTHORITIES
+          value: /etc/ssl/root-ca.pem
+        - name: SSL_CERTIFICATE
+          value: /etc/ssl/filebeat.pem
+        - name: SSL_KEY
+          value: /etc/ssl/filebeat.key
+        - name: WAZUH_CLUSTER_KEY
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: wazuh-cluster-key
+        image: wazuh/wazuh-manager:4.14.0
+        imagePullPolicy: IfNotPresent
+        name: wazuh-manager
+        ports:
+        - containerPort: 1514
+          name: agents-events
+          protocol: TCP
+        - containerPort: 1516
+          name: cluster
+          protocol: TCP
+        resources:
+          limits:
+            cpu: '1500m'
+            memory: 4Gi
+          requests:
+            cpu: '1'
+            memory: 3Gi
+        securityContext:
+          capabilities:
+            add:
+            - SYS_CHROOT
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /wazuh-config-mount/etc/ossec.conf
+          name: config
+          readOnly: true
+          subPath: worker.conf
+        - mountPath: /etc/ssl/root-ca.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: ca.crt
+        - mountPath: /etc/ssl/filebeat.pem
+          name: filebeat-certs
+          readOnly: true
+          subPath: tls.crt
+        - mountPath: /etc/ssl/filebeat.key
+          name: filebeat-certs
+          readOnly: true
+          subPath: tls.key
+        - mountPath: /var/ossec/api/configuration
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/api/configuration
+        - mountPath: /var/ossec/etc
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/etc
+        - mountPath: /var/ossec/logs
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/logs
+        - mountPath: /var/ossec/queue
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/queue
+        - mountPath: /var/ossec/var/multigroups
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/var/multigroups
+        - mountPath: /var/ossec/active-response/bin
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/active-response/bin
+        - mountPath: /var/ossec/wodles
+          name: wazuh-manager-worker
+          subPath: wazuh/var/ossec/wodles
+        - mountPath: /etc/filebeat
+          name: wazuh-manager-worker
+          subPath: filebeat/etc/filebeat
+        - mountPath: /var/lib/filebeat
+          name: wazuh-manager-worker
+          subPath: filebeat/var/lib/filebeat
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - |
+          # Get pod ordinal from hostname (e.g., wazuh-manager-worker-0 -> 0)
+          ORDINAL=${HOSTNAME##*-}
+          echo "Setting up filebeat certificates for worker pod: $ORDINAL"
+
+          # Copy filebeat certificate for this specific worker
+          cp /certs/worker-$ORDINAL/tls.crt /certs-out/tls.crt
+          cp /certs/worker-$ORDINAL/tls.key /certs-out/tls.key
+          cp /certs/worker-$ORDINAL/ca.crt /certs-out/ca.crt
+
+          # Set proper permissions
+          chmod 644 /certs-out/*
+
+          echo "Certificates copied successfully"
+          ls -la /certs-out/
+        image: busybox
+        imagePullPolicy: Always
+        name: setup-filebeat-certs
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /certs/worker-0
+          name: wazuh-manager-worker-0-filebeat-cert
+          readOnly: true
+        - mountPath: /certs/worker-1
+          name: wazuh-manager-worker-1-filebeat-cert
+          readOnly: true
+        - mountPath: /certs-out
+          name: filebeat-certs
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 3000
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: wazuh-conf
+        name: config
+      - name: filebeat-certs
+        emptyDir: {}
+      - name: wazuh-manager-worker-0-filebeat-cert
+        secret:
+          defaultMode: 420
+          secretName: wazuh-manager-worker-0-filebeat-cert
+      - name: wazuh-manager-worker-1-filebeat-cert
+        secret:
+          defaultMode: 420
+          secretName: wazuh-manager-worker-1-filebeat-cert
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: wazuh-manager-worker
+      namespace: wazuh
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 30Gi
+      storageClassName: wazuh-storage
+      volumeMode: Filesystem
+    status:
+      phase: Pending
+  availableReplicas: 2
+  collisionCount: 0
+  currentReplicas: 2
+  currentRevision: wazuh-manager-worker-64cf4dcf4f
+  observedGeneration: 3
+  readyReplicas: 2
+  updateRevision: wazuh-manager-worker-64cf4dcf4f
+  updatedReplicas: 2

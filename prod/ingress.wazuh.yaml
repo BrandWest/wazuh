@@ -1,0 +1,91 @@
+---
+# Wazuh Dashboard Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wazuh-dashboard
+  namespace: wazuh
+  annotations:
+    cert-manager.io/issuer: vault-issuer
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_url>
+        - <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_internal_url>
+      secretName: wazuh-dashboard-tls
+  rules:
+    # External access (diagon.cloud)
+    - host: <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_url>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 443
+    # Internal access (diagon.ally)
+    - host: <path:argocd/data/argocd-vault-plugin/wazuh#dashboard_internal_url>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 443
+
+---
+# Wazuh API Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wazuh-api
+  namespace: wazuh
+  annotations:
+    cert-manager.io/issuer: vault-issuer
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    # Wazuh API specific settings
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - <path:argocd/data/argocd-vault-plugin/wazuh#api_url>
+        - <path:argocd/data/argocd-vault-plugin/wazuh#api_internal_url>
+      secretName: wazuh-api-tls
+  rules:
+    # External access (diagon.cloud)
+    - host: <path:argocd/data/argocd-vault-plugin/wazuh#api_url>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wazuh
+                port:
+                  number: 55000
+    # Internal access (diagon.ally)
+    - host: <path:argocd/data/argocd-vault-plugin/wazuh#api_internal_url>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wazuh
+                port:
+                  number: 55000

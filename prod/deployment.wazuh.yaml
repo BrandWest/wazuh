@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wazuh-dashboard
+  namespace: wazuh
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: wazuh-dashboard
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: wazuh-dashboard
+      name: wazuh-dashboard
+    spec:
+      containers:
+      - env:
+        - name: INDEXER_URL
+          value: https://indexer:9200
+        - name: INDEXER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: indexer-cred
+        - name: INDEXER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: indexer-cred
+        - name: DASHBOARD_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: dashboard-cred
+        - name: DASHBOARD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: dashboard-cred
+        - name: SERVER_SSL_ENABLED
+          value: 'true'
+        - name: SERVER_SSL_CERTIFICATE
+          value: /usr/share/wazuh-dashboard/certs/tls.crt
+        - name: SERVER_SSL_KEY
+          value: /usr/share/wazuh-dashboard/certs/tls.key
+        - name: WAZUH_API_URL
+          value: https://wazuh
+        - name: API_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: wazuh-api-cred
+        - name: API_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: wazuh-api-cred
+        image: wazuh/wazuh-dashboard:4.14.0
+        imagePullPolicy: IfNotPresent
+        name: wazuh-dashboard
+        ports:
+        - containerPort: 5601
+          name: dashboard
+          protocol: TCP
+        resources:
+          limits:
+            cpu: '1'
+            memory: 3Gi
+          requests:
+            cpu: 500m
+            memory: 2Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/share/wazuh-dashboard/config/opensearch_dashboards.yml
+          name: config
+          subPath: opensearch_dashboards.yml
+        - mountPath: /usr/share/wazuh-dashboard/certs/tls.crt
+          name: dashboard-certs
+          readOnly: true
+          subPath: tls.crt
+        - mountPath: /usr/share/wazuh-dashboard/certs/tls.key
+          name: dashboard-certs
+          readOnly: true
+          subPath: tls.key
+        - mountPath: /usr/share/wazuh-dashboard/certs/ca.crt
+          name: dashboard-certs
+          readOnly: true
+          subPath: ca.crt
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: dashboard-conf
+        name: config
+      - name: dashboard-certs
+        secret:
+          defaultMode: 420
+          secretName: wazuh-dashboard-tls
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: '2025-11-04T20:17:05Z'
+    lastUpdateTime: '2025-11-04T20:17:05Z'
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: 'True'
+    type: Available
+  - lastTransitionTime: '2025-11-04T20:11:38Z'
+    lastUpdateTime: '2025-11-04T20:17:05Z'
+    message: ReplicaSet "wazuh-dashboard-85d5877c46" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: 'True'
+    type: Progressing
+  observedGeneration: 10
+  readyReplicas: 1
+  updatedReplicas: 1
