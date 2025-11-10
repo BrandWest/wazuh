@@ -63,12 +63,12 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - <path:argocd/data/argocd-vault-plugin/wazuh#api_url>
+        - <path:argocd/data/argocd-vault-plugin/wazuh#api_external_url>
         - <path:argocd/data/argocd-vault-plugin/wazuh#api_internal_url>
       secretName: wazuh-api-tls
   rules:
     # External access (diagon.cloud)
-    - host: <path:argocd/data/argocd-vault-plugin/wazuh#api_url>
+    - host: <path:argocd/data/argocd-vault-plugin/wazuh#api_external_url>
       http:
         paths:
           - path: /
