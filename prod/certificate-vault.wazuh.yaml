@@ -7,7 +7,6 @@ metadata:
   namespace: wazuh
 spec:
   secretName: wazuh-indexer-root-ca
-  commonName: "Wazuh Indexer Root CA"
   isCA: true
   issuerRef:
     name: vault-issuer
@@ -184,3 +183,4 @@ spec:
     - dashboard.wazuh.svc
   duration: 2160h # 90 days
   renewBefore: 720h # 30 days
+
