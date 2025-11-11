@@ -75,7 +75,7 @@ data:
     plugins.security.ssl.transport.pemtrustedcas_filepath: /usr/share/wazuh-indexer/config/certs/root-ca.pem\n\
     plugins.security.ssl.http.enabled: true\nplugins.security.ssl.transport.enforce_hostname_verification:\
     \ false\nplugins.security.ssl.transport.resolve_hostname: false\nplugins.security.authcz.admin_dn:\n\
-    \  - CN=admin,O=Company,L=California,C=US\nplugins.security.check_snapshot_restore_write_privileges:\
+    \  - CN=admin\nplugins.security.check_snapshot_restore_write_privileges:\
     \ true\nplugins.security.enable_snapshot_restore_privilege: true\nplugins.security.nodes_dn:\n\
     \  - CN=wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local\n\
     \  - CN=wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local\nplugins.security.restapi.roles_enabled:\n\
