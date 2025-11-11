@@ -7,10 +7,8 @@ metadata:
   namespace: wazuh
   annotations:
     cert-manager.io/issuer: vault-issuer
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.org/ssl-services: "dashboard"
+    nginx.org/client-max-body-size: "50m"
 spec:
   ingressClassName: nginx
   tls:
@@ -51,14 +49,12 @@ metadata:
   namespace: wazuh
   annotations:
     cert-manager.io/issuer: vault-issuer
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.org/ssl-services: "wazuh"
+    nginx.org/client-max-body-size: "50m"
     # Wazuh API specific settings
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.org/proxy-connect-timeout: "600s"
+    nginx.org/proxy-send-timeout: "600s"
+    nginx.org/proxy-read-timeout: "600s"
 spec:
   ingressClassName: nginx
   tls:
