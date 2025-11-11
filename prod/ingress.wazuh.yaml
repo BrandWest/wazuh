@@ -9,6 +9,10 @@ metadata:
     cert-manager.io/issuer: vault-issuer
     nginx.org/ssl-services: "dashboard"
     nginx.org/client-max-body-size: "50m"
+    # Dashboard timeout settings for large config uploads
+    nginx.org/proxy-connect-timeout: "600s"
+    nginx.org/proxy-send-timeout: "600s"
+    nginx.org/proxy-read-timeout: "600s"
 spec:
   ingressClassName: nginx
   tls:
