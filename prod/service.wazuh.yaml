@@ -32,13 +32,14 @@ metadata:
   namespace: wazuh
 spec:
   type: LoadBalancer
+  selector:
+    app: wazuh-indexer
   ports:
   - name: indexer-nodes
     port: 9300
     protocol: TCP
     targetPort: 9300
-  selector:
-    app: wazuh-indexer
+
 ---
 apiVersion: v1
 kind: Service
