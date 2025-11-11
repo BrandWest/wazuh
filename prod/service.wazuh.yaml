@@ -31,13 +31,7 @@ metadata:
   name: wazuh-indexer
   namespace: wazuh
 spec:
-  clusterIP: None
-  clusterIPs:
-  - None
-  internalTrafficPolicy: Cluster
-  ipFamilies:
-  - IPv4
-  ipFamilyPolicy: SingleStack
+  type: LoadBalancer
   ports:
   - name: indexer-nodes
     port: 9300
@@ -45,8 +39,6 @@ spec:
     targetPort: 9300
   selector:
     app: wazuh-indexer
-  sessionAffinity: None
-  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
