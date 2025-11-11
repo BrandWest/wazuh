@@ -45,9 +45,9 @@ data:
   internal_users.yml: "---\n# This is the internal user database\n# The hash value\
     \ is a bcrypt hash and can be generated with plugin/tools/hash.sh\n\n_meta:\n\
     \  type: \"internalusers\"\n  config_version: 2\n\n# Define your internal users\
-    \ here\n\n## Demo users\n\nadmin:\n  hash: \"$2y$12$K/SpwjtB.wOHJ/Nc6GVRDuc1h0rM1DfvziFRNPtk27P.c4yDr9njO\"\
+    \ here\n\n## Demo users\n\nadmin:\n  hash: \"<path:argocd/data/argocd-vault-plugin/wazuh#admin_password_hash>\"\
     \n  reserved: true\n  backend_roles:\n  - \"admin\"\n  description: \"Demo admin\
-    \ user\"\n\nkibanaserver:\n  hash: \"$2a$12$4AcgAt3xwOWadA5s5blL6ev39OXDNhmOesEoo33eZtrq2N0YrU3H.\"\
+    \ user\"\n\nkibanaserver:\n  hash: \"<path:argocd/data/argocd-vault-plugin/wazuh#kibanaserver_password_hash>\"\
     \n  reserved: true\n  description: \"Demo kibanaserver user\"\n\nkibanaro:\n \
     \ hash: \"$2a$12$JJSXNfTowz7Uu5ttXfeYpeYE0arACvcwlPBStB1F.MI7f0U9Z4DGC\"\n  reserved:\
     \ false\n  backend_roles:\n  - \"kibanauser\"\n  - \"readall\"\n  attributes:\n\
