@@ -33,6 +33,9 @@ spec:
     - wazuh-indexer-0.wazuh-indexer.wazuh.svc
     - wazuh-indexer-0.wazuh-indexer
     - wazuh-indexer-0
+    - indexer.wazuh.svc.cluster.local
+    - indexer.wazuh.svc
+    - indexer
     - localhost
   ipAddresses:
     - 127.0.0.1
@@ -56,6 +59,9 @@ spec:
     - wazuh-indexer-1.wazuh-indexer.wazuh.svc
     - wazuh-indexer-1.wazuh-indexer
     - wazuh-indexer-1
+    - indexer.wazuh.svc.cluster.local
+    - indexer.wazuh.svc
+    - indexer
     - localhost
   ipAddresses:
     - 127.0.0.1
