@@ -60,8 +60,11 @@ data:
     \n  reserved: false\n  backend_roles:\n  - \"snapshotrestore\"\n  description:\
     \ \"Demo snapshotrestore user\"\n"
   opensearch.yml: "cluster.name: ${CLUSTER_NAME}\nnode.name: ${NODE_NAME}\nnetwork.host:\
-    \ ${NETWORK_HOST}\ndiscovery.seed_hosts: wazuh-indexer-0.wazuh-indexer\ncluster.initial_cluster_manager_nodes:\n\
-    \  - wazuh-indexer-0\n\n# Allow Filebeat 7.10.2 to work with OpenSearch 2.x\n\
+    \ ${NETWORK_HOST}\ndiscovery.seed_hosts:\n\
+    \  - wazuh-indexer-0.wazuh-indexer\n\
+    \  - wazuh-indexer-1.wazuh-indexer\ncluster.initial_cluster_manager_nodes:\n\
+    \  - wazuh-indexer-0\n\
+    \  - wazuh-indexer-1\n\n# Allow Filebeat 7.10.2 to work with OpenSearch 2.x\n\
     compatibility.override_main_response_version: true\n\nnode.max_local_storage_nodes:\
     \ \"2\"\npath.data: /var/lib/wazuh-indexer\npath.logs: /var/log/wazuh-indexer\n\
     plugins.security.ssl.http.pemcert_filepath: /usr/share/wazuh-indexer/config/certs/node.pem\n\
@@ -74,7 +77,8 @@ data:
     \ false\nplugins.security.ssl.transport.resolve_hostname: false\nplugins.security.authcz.admin_dn:\n\
     \  - CN=admin,O=Company,L=California,C=US\nplugins.security.check_snapshot_restore_write_privileges:\
     \ true\nplugins.security.enable_snapshot_restore_privilege: true\nplugins.security.nodes_dn:\n\
-    \  - CN=indexer,O=Company,L=California,C=US\nplugins.security.restapi.roles_enabled:\n\
+    \  - CN=wazuh-indexer-0.wazuh-indexer.wazuh.svc.cluster.local\n\
+    \  - CN=wazuh-indexer-1.wazuh-indexer.wazuh.svc.cluster.local\nplugins.security.restapi.roles_enabled:\n\
     - \"all_access\"\n- \"security_rest_api_access\"\nplugins.security.allow_default_init_securityindex:\
     \ true\ncluster.routing.allocation.disk.threshold_enabled: false"
 kind: ConfigMap
