@@ -17,12 +17,12 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - <path:secret/data/apps/wazuh#dashboard_external_url>
-        - <path:secret/data/apps/wazuh#dashboard_internal_url>
+        - <path:secret/data/infra/wazuh#dashboard_external_url>
+        - <path:secret/data/infra/wazuh#dashboard_internal_url>
       secretName: wazuh-dashboard-tls
   rules:
     # External access (diagon.cloud)
-    - host: <path:secret/data/apps/wazuh#dashboard_external_url>
+    - host: <path:secret/data/infra/wazuh#dashboard_external_url>
       http:
         paths:
           - path: /
@@ -33,7 +33,7 @@ spec:
                 port:
                   number: 443
     # Internal access (diagon.ally)
-    - host: <path:secret/data/apps/wazuh#dashboard_internal_url>
+    - host: <path:secret/data/infra/wazuh#dashboard_internal_url>
       http:
         paths:
           - path: /
@@ -63,12 +63,12 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - <path:secret/data/apps/wazuh#api_external_url>
-        - <path:secret/data/apps/wazuh#api_internal_url>
+        - <path:secret/data/infra/wazuh#api_external_url>
+        - <path:secret/data/infra/wazuh#api_internal_url>
       secretName: wazuh-api-tls
   rules:
     # External access (diagon.cloud)
-    - host: <path:secret/data/apps/wazuh#api_external_url>
+    - host: <path:secret/data/infra/wazuh#api_external_url>
       http:
         paths:
           - path: /
@@ -79,7 +79,7 @@ spec:
                 port:
                   number: 55000
     # Internal access (diagon.ally)
-    - host: <path:secret/data/apps/wazuh#api_internal_url>
+    - host: <path:secret/data/infra/wazuh#api_internal_url>
       http:
         paths:
           - path: /

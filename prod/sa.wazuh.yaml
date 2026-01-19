@@ -11,7 +11,7 @@ kind: ClusterRole
 metadata:
   name: cert-manager-wazuh
   annotations:
-    avp.kubernetes.io/path: "secret/data/apps/wazuh"
+    avp.kubernetes.io/path: "secret/data/infra/wazuh"
 rules:
 - apiGroups: [""]
   resources: ["secrets"]
