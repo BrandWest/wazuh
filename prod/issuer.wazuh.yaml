@@ -4,7 +4,7 @@ metadata:
   name: vault-issuer
   namespace: wazuh
   annotations:
-    avp.kubernetes.io/path: "argocd/data/argocd-vault-plugin/vault"
+    avp.kubernetes.io/path: "secret/data/apps/vault"
 spec:
   vault:
     server: <vault_url>
